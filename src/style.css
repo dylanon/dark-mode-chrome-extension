@@ -1,0 +1,12 @@
+body[data-looker-initialized] {
+  --lookerFilterTransitionDuration: 0.3s;
+  transition: background 0.3s, filter var(--lookerFilterTransitionDuration);
+}
+
+body[data-looker-enabled] {
+  background-color: #181818;
+  --lookerInvertFactor: 0.9;
+  --lookerSaturateFactor: 0.5;
+  filter: invert(var(--lookerInvertFactor))
+    saturate(var(--lookerSaturateFactor));
+}

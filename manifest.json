@@ -1,0 +1,16 @@
+{
+  "manifest_version": 2,
+  "name": "Looker",
+  "version": "0.1.0",
+  "description": "I'm easy on the eyes 👀",
+  "browser_action": {
+    "default_popup": "src/popup/index.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "css": ["src/style.css"],
+      "js": ["src/main.js"]
+    }
+  ]
+}
