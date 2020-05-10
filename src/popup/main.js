@@ -18,7 +18,12 @@ function getActiveTab() {
 async function sendMessageToActiveTab(message) {
   try {
     const tab = await getActiveTab();
-    chrome.tabs.sendMessage(tab.id, message);
+    const tabResponse = await new Promise((resolve) => {
+      chrome.tabs.sendMessage(tab.id, message, (response) => {
+        resolve(response);
+      });
+    });
+    return tabResponse;
   } catch (error) {
     // TODO: Log error somewhere?
     console.error(err.message);
@@ -53,11 +58,26 @@ function handleSaturationChange(e) {
   });
 }
 
+async function getSettings() {
+  const settings = await sendMessageToActiveTab({ type: 'REQUEST_SETTINGS' });
+  return settings;
+}
+
+async function hydrateSettings() {
+  const settings = await getSettings();
+  const { invertFactor, saturateFactor } = settings;
+  if (invertFactor) {
+    invertControl.value = invertFactor;
+  }
+  if (saturateFactor) {
+    saturateControl.value = saturateFactor;
+  }
+}
+
+hydrateSettings();
 enableControl.addEventListener('click', handleEnable);
 disableControl.addEventListener('click', handleDisable);
 invertControl.addEventListener('input', handleInvertChange);
 invertControl.addEventListener('change', handleRangeChange);
 saturateControl.addEventListener('input', handleSaturationChange);
 saturateControl.addEventListener('change', handleRangeChange);
-
-sendMessageToActiveTab({ type: 'INIT' });

@@ -12,5 +12,6 @@
       "css": ["src/style.css"],
       "js": ["src/main.js"]
     }
-  ]
+  ],
+  "permissions": ["storage"]
 }
