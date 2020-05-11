@@ -4,7 +4,7 @@ body[data-looker-initialized] {
 }
 
 body:not([data-looker-disabled]) {
-  background-color: #181818;
+  background-color: #181818 !important;
   --lookerInvertFactor: 0.9;
   --lookerSaturateFactor: 1;
   filter: invert(var(--lookerInvertFactor))
