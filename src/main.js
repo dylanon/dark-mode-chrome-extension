@@ -137,10 +137,15 @@ async function restoreSettings() {
   }
 }
 
-function init() {
+async function init() {
   rootEl.setAttribute('data-looker-initialized', '');
   registerMessageListeners();
-  restoreSettings();
+  await restoreSettings();
+  rootEl.setAttribute('data-looker-hydrated', '');
+  // TODO: Listen for transitionend event instead of using timeout
+  setTimeout(() => {
+    rootEl.setAttribute('data-looker-transition-ready', '');
+  }, 10);
 }
 
 init();
