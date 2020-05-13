@@ -1,4 +1,7 @@
 html[data-looker-initialized] {
+  --lookerInvertFactor: 0.9;
+  --lookerMediaInvertFactor: 1;
+  --lookerSaturateFactor: 1;
   --lookerFilterTransitionDuration: 0.3s;
   transition: background-color 0.3s,
     filter var(--lookerFilterTransitionDuration);
@@ -6,8 +9,6 @@ html[data-looker-initialized] {
 
 html:not([data-looker-disabled]) {
   background-color: rgb(255, 255, 255) !important;
-  --lookerInvertFactor: 0.9;
-  --lookerSaturateFactor: 1;
   filter: invert(var(--lookerInvertFactor))
     saturate(var(--lookerSaturateFactor));
 }
@@ -19,9 +20,9 @@ html[data-looker-initialized] video {
 
 html:not([data-looker-disabled]) img,
 html:not([data-looker-disabled]) video {
-  filter: invert(1);
+  filter: invert(var(--lookerMediaInvertFactor));
 }
 
 iframe {
-  filter: invert(1);
+  filter: invert(var(--lookerMediaInvertFactor));
 }

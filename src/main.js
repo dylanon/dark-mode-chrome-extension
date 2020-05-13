@@ -60,6 +60,7 @@ function handleInvertChange(value, options = {}) {
     setFilterTransition('0s');
   }
   rootEl.style.setProperty('--lookerInvertFactor', value);
+  rootEl.style.setProperty('--lookerMediaInvertFactor', value >= 0.5 ? 1 : 0);
 }
 
 function handleSaturationChange(value, options = {}) {
