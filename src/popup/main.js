@@ -38,9 +38,13 @@ function handleDisable() {
   sendMessageToActiveTab({ type: 'DISABLE' });
 }
 
-function handleRangeChange() {
+function handleRangeChange(e, rangeType) {
   sendMessageToActiveTab({
     type: 'RANGE_CHANGE',
+    payload: {
+      rangeType,
+      value: e.target.value,
+    },
   });
 }
 
@@ -65,7 +69,7 @@ async function getSettings() {
 
 async function hydrateSettings() {
   const settings = await getSettings();
-  const { invertFactor, saturateFactor } = settings;
+  const { invertFactor, saturateFactor } = settings || {};
   if (invertFactor) {
     invertControl.value = invertFactor;
   }
@@ -78,6 +82,10 @@ hydrateSettings();
 enableControl.addEventListener('click', handleEnable);
 disableControl.addEventListener('click', handleDisable);
 invertControl.addEventListener('input', handleInvertChange);
-invertControl.addEventListener('change', handleRangeChange);
+invertControl.addEventListener('change', function (e) {
+  handleRangeChange(e, 'invertFactor');
+});
 saturateControl.addEventListener('input', handleSaturationChange);
-saturateControl.addEventListener('change', handleRangeChange);
+saturateControl.addEventListener('change', function (e) {
+  handleRangeChange(e, 'saturateFactor');
+});

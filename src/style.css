@@ -1,23 +1,24 @@
-body[data-looker-initialized] {
+html[data-looker-initialized] {
   --lookerFilterTransitionDuration: 0.3s;
-  transition: background 0.3s, filter var(--lookerFilterTransitionDuration);
+  transition: background-color 0.3s,
+    filter var(--lookerFilterTransitionDuration);
 }
 
-body:not([data-looker-disabled]) {
-  background-color: #181818 !important;
+html:not([data-looker-disabled]) {
+  background-color: rgb(255, 255, 255) !important;
   --lookerInvertFactor: 0.9;
   --lookerSaturateFactor: 1;
   filter: invert(var(--lookerInvertFactor))
     saturate(var(--lookerSaturateFactor));
 }
 
-body[data-looker-initialized] img,
-body[data-looker-initialized] video {
+html[data-looker-initialized] img,
+html[data-looker-initialized] video {
   transition: filter var(--lookerFilterTransitionDuration);
 }
 
-body:not([data-looker-disabled]) img,
-body:not([data-looker-disabled]) video {
+html:not([data-looker-disabled]) img,
+html:not([data-looker-disabled]) video {
   filter: invert(1);
 }
 

@@ -1,4 +1,4 @@
-const body = document.querySelector('body');
+const rootEl = document.querySelector('html');
 
 function sendMessageToExtension(message) {
   chrome.runtime.sendMessage(message);
@@ -30,25 +30,28 @@ async function patchSettings(patch) {
 }
 
 function handleEnable() {
-  body.removeAttribute('data-looker-disabled');
+  rootEl.removeAttribute('data-looker-disabled');
   patchSettings({
     enabled: true,
   });
 }
 
 function handleDisable() {
-  body.setAttribute('data-looker-disabled', '');
+  rootEl.setAttribute('data-looker-disabled', '');
   patchSettings({
     enabled: false,
   });
 }
 
 function setFilterTransition(value) {
-  body.style.setProperty('--lookerFilterTransitionDuration', value);
+  rootEl.style.setProperty('--lookerFilterTransitionDuration', value);
 }
 
-function handleRangeChange() {
+function handleRangeChange({ rangeType, value }) {
   setFilterTransition('0.3s');
+  patchSettings({
+    [rangeType]: value,
+  });
 }
 
 function handleInvertChange(value, options = {}) {
@@ -56,10 +59,7 @@ function handleInvertChange(value, options = {}) {
   if (disableTransition) {
     setFilterTransition('0s');
   }
-  body.style.setProperty('--lookerInvertFactor', value);
-  patchSettings({
-    invertFactor: value,
-  });
+  rootEl.style.setProperty('--lookerInvertFactor', value);
 }
 
 function handleSaturationChange(value, options = {}) {
@@ -67,10 +67,7 @@ function handleSaturationChange(value, options = {}) {
   if (disableTransition) {
     setFilterTransition('0s');
   }
-  body.style.setProperty('--lookerSaturateFactor', value);
-  patchSettings({
-    saturateFactor: value,
-  });
+  rootEl.style.setProperty('--lookerSaturateFactor', value);
 }
 
 async function handleRequestSettings(sendResponse) {
@@ -93,15 +90,14 @@ function registerMessageListeners() {
         handleDisable();
         return;
       case 'RANGE_CHANGE':
-        handleRangeChange();
+        handleRangeChange(payload);
         return;
       case 'INVERT_CHANGE':
         handleInvertChange(payload, { disableTransition: true });
         return;
       case 'SATURATION_CHANGE':
         handleSaturationChange(payload, { disableTransition: true });
-        // Necessary to handle `sendResponse` asynchronously
-        return true;
+        return;
       case 'REQUEST_SETTINGS':
         handleRequestSettings(sendResponse);
         // Necessary to handle `sendResponse` asynchronously
@@ -141,7 +137,7 @@ async function restoreSettings() {
 }
 
 function init() {
-  body.setAttribute('data-looker-initialized', '');
+  rootEl.setAttribute('data-looker-initialized', '');
   registerMessageListeners();
   restoreSettings();
 }
