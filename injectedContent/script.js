@@ -189,7 +189,9 @@ async function restoreSettings() {
 async function init() {
   registerMessageListeners();
   await restoreSettings();
-  rootEl.setAttribute('data-looker-initialized', '');
+  setTimeout(() => {
+    rootEl.setAttribute('data-looker-initialized', '');
+  }, 10);
 }
 
 init();
