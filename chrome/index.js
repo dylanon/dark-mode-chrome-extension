@@ -12,7 +12,6 @@ export function getActiveTab() {
 
 export async function sendMessageToActiveTab(message) {
   const tab = await getActiveTab();
-  console.log('sendMessageToActiveTab');
   const tabResponse = await new Promise((resolve) => {
     chrome.tabs.sendMessage(tab.id, message, (response) => {
       resolve(response);

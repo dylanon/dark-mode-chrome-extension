@@ -6,8 +6,36 @@
     <title>Looker</title>
   </head>
   <body>
-    <label for="extension-toggle">Extension enabled</label>
-    <input type="checkbox" id="extension-toggle" />
+    <div>
+      <label for="extension-toggle">Extension enabled</label>
+      <input type="checkbox" id="extension-toggle" />
+    </div>
+    <div>
+      <label for="site-toggle">Enabled for this site</label>
+      <input type="checkbox" id="site-toggle" />
+    </div>
+    <div>
+      <label for="invert-control">Invert</label>
+      <input
+        id="invert-control"
+        type="range"
+        min="0"
+        max="1"
+        step="0.01"
+        value="0.9"
+      />
+    </div>
+    <div>
+      <label for="saturate-control">Saturation</label>
+      <input
+        id="saturate-control"
+        type="range"
+        min="0"
+        max="1"
+        step="0.01"
+        value="1"
+      />
+    </div>
     <script type="module" src="script.js"></script>
   </body>
 </html>

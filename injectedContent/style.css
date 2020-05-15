@@ -1,0 +1,38 @@
+html:not([data-looker-initialized]) {
+  background-color: rgb(24, 24, 24);
+  filter: brightness(0);
+}
+
+html[data-looker-initialized] {
+  --lookerInvertFactor: 0.9;
+  --lookerMediaInvertFactor: 1;
+  --lookerSaturateFactor: 1;
+  --lookerFilterTransitionDuration: 0.3s;
+}
+
+html[data-looker-extension-enabled][data-looker-site-enabled] {
+  background-color: rgb(255, 255, 255) !important;
+  filter: brightness(1) invert(var(--lookerInvertFactor))
+    saturate(var(--lookerSaturateFactor));
+}
+
+html:not([data-looker-extension-enabled][data-looker-site-enabled]) {
+  background-color: unset;
+  filter: unset;
+}
+
+html[data-looker-extension-enabled][data-looker-site-enabled] img,
+html[data-looker-extension-enabled][data-looker-site-enabled] video,
+html[data-looker-extension-enabled][data-looker-site-enabled] iframe {
+  filter: invert(var(--lookerMediaInvertFactor));
+}
+
+html[data-looker-initialized] {
+  transition: background-color 0.3s,
+    filter var(--lookerFilterTransitionDuration);
+}
+
+html[data-looker-initialized] img,
+html[data-looker-initialized] video {
+  transition: filter var(--lookerFilterTransitionDuration);
+}
