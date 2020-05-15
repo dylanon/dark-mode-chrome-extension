@@ -4,13 +4,13 @@
   "version": "0.1.0",
   "description": "I'm easy on the eyes 👀",
   "browser_action": {
-    "default_popup": "src/popup/index.html"
+    "default_popup": "interface/index.html"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "css": ["src/style.css"],
-      "js": ["src/main.js"]
+      "css": ["injectedContent/style.css"],
+      "js": ["injectedContent/script.js"]
     }
   ],
   "permissions": ["storage"]
