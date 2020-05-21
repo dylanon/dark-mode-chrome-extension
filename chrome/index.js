@@ -12,8 +12,12 @@ export function getActiveTab() {
 
 export async function sendMessageToActiveTab(message) {
   const tab = await getActiveTab();
-  const tabResponse = await new Promise((resolve) => {
+  const tabResponse = await new Promise((resolve, reject) => {
     chrome.tabs.sendMessage(tab.id, message, (response) => {
+      const errorMessage = chrome.runtime.lastError;
+      if (errorMessage) {
+        reject(new Error(errorMessage));
+      }
       resolve(response);
     });
   });
