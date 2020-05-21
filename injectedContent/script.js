@@ -12,12 +12,16 @@ function getHostInfo() {
 }
 
 function getSettings() {
-  // TODO: Handle error from getting storage
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const [domainStorageKey] = getHostInfo();
     chrome.storage.sync.get(['isExtensionEnabled', domainStorageKey], function (
       settings
     ) {
+      const errorMessage = chrome.runtime.lastError;
+      if (errorMessage) {
+        reject(new Error(errorMessage));
+      }
+
       if (!settings) {
         resolve(null);
       }
@@ -29,7 +33,7 @@ function getSettings() {
 async function patchSettings(patch) {
   const [domainStorageKey] = getHostInfo();
   let settings = (await getSettings()) || {};
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     chrome.storage.sync.set(
       {
         ...settings,
@@ -39,7 +43,13 @@ async function patchSettings(patch) {
           ...patch[domainStorageKey],
         },
       },
-      resolve()
+      () => {
+        const errorMessage = chrome.runtime.lastError;
+        if (errorMessage) {
+          reject(new Error(errorMessage));
+        }
+        resolve();
+      }
     );
   });
 }
@@ -57,7 +67,7 @@ function handleExtensionToggle(isEnabled) {
       isExtensionEnabled: false,
     };
   }
-  patchSettings(settingsPatch);
+  return patchSettings(settingsPatch);
 }
 
 function handleSiteToggle(isEnabled) {
@@ -78,7 +88,7 @@ function handleSiteToggle(isEnabled) {
       },
     };
   }
-  patchSettings(settingsPatch);
+  return patchSettings(settingsPatch);
 }
 
 function setFilterTransition(value) {
@@ -88,7 +98,7 @@ function setFilterTransition(value) {
 function handleRangeChange({ rangeType, value }) {
   setFilterTransition('0.3s');
   const [hostStorageKey] = getHostInfo();
-  patchSettings({
+  return patchSettings({
     [hostStorageKey]: {
       [rangeType]: value,
     },
@@ -113,15 +123,24 @@ function handleSaturationInput(value, options = {}) {
 }
 
 async function handleRequestSettings(sendResponse) {
-  const settings = (await getSettings()) || {};
-  const { isExtensionEnabled } = settings;
-  const [hostStorageKey] = getHostInfo();
-  // Flatten settings since extension cannot fetch the host name
-  const flattenedSettings = {
-    isExtensionEnabled,
-    ...settings[hostStorageKey],
-  };
-  sendResponse(flattenedSettings);
+  try {
+    const settings = (await getSettings()) || {};
+    const { isExtensionEnabled } = settings;
+    const [hostStorageKey] = getHostInfo();
+    // Flatten settings since extension cannot fetch the host name
+    const flattenedSettings = {
+      isExtensionEnabled,
+      ...settings[hostStorageKey],
+    };
+    sendResponse(flattenedSettings);
+  } catch (error) {
+    sendResponse({});
+    throw error;
+  }
+}
+
+function handleError(error) {
+  console.error('[Looker extension] Error:', error.message);
 }
 
 function registerMessageListeners() {
@@ -133,17 +152,15 @@ function registerMessageListeners() {
     const { type, payload } = message;
     switch (type) {
       case 'EXTENSION_TOGGLE':
-        handleExtensionToggle(payload);
-        sendResponse();
-        return;
+        handleExtensionToggle(payload).catch(handleError).then(sendResponse);
+        // Necessary to handle `sendResponse` asynchronously
+        return true;
       case 'SITE_TOGGLE':
-        handleSiteToggle(payload);
-        sendResponse();
-        return;
+        handleSiteToggle(payload).catch(handleError).then(sendResponse);
+        return true;
       case 'RANGE_CHANGE':
-        handleRangeChange(payload);
-        sendResponse();
-        return;
+        handleRangeChange(payload).catch(handleError).then(sendResponse);
+        return true;
       case 'INVERT_INPUT':
         handleInvertInput(payload, { disableTransition: true });
         sendResponse();
@@ -153,8 +170,7 @@ function registerMessageListeners() {
         sendResponse();
         return;
       case 'REQUEST_SETTINGS':
-        handleRequestSettings(sendResponse);
-        // Necessary to handle `sendResponse` asynchronously
+        handleRequestSettings(sendResponse).catch(handleError);
         return true;
       default:
         return;
@@ -170,13 +186,13 @@ async function restoreSettings() {
     settings[hostStorageKey] || {};
 
   if (isExtensionEnabled) {
-    handleExtensionToggle(isExtensionEnabled);
+    await handleExtensionToggle(isExtensionEnabled);
   }
 
   if (!enabled) {
-    handleSiteToggle(false);
+    await handleSiteToggle(false);
   } else {
-    handleSiteToggle(true);
+    await handleSiteToggle(true);
   }
   if (invertFactor !== undefined) {
     handleInvertInput(invertFactor);
@@ -186,9 +202,9 @@ async function restoreSettings() {
   }
 }
 
-async function init() {
+function init() {
   registerMessageListeners();
-  await restoreSettings();
+  restoreSettings().catch(handleError);
   setTimeout(() => {
     rootEl.setAttribute('data-looker-initialized', '');
   }, 10);
