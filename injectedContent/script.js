@@ -12,12 +12,16 @@ function getHostInfo() {
 }
 
 function getSettings() {
-  // TODO: Handle error from getting storage
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const [domainStorageKey] = getHostInfo();
     chrome.storage.sync.get(['isExtensionEnabled', domainStorageKey], function (
       settings
     ) {
+      const errorMessage = chrome.runtime.lastError;
+      if (errorMessage) {
+        reject(new Error(errorMessage));
+      }
+
       if (!settings) {
         resolve(null);
       }
@@ -43,9 +47,8 @@ async function patchSettings(patch) {
         const errorMessage = chrome.runtime.lastError;
         if (errorMessage) {
           reject(new Error(errorMessage));
-        } else {
-          resolve();
         }
+        resolve();
       }
     );
   });
@@ -120,19 +123,24 @@ function handleSaturationInput(value, options = {}) {
 }
 
 async function handleRequestSettings(sendResponse) {
-  const settings = (await getSettings()) || {};
-  const { isExtensionEnabled } = settings;
-  const [hostStorageKey] = getHostInfo();
-  // Flatten settings since extension cannot fetch the host name
-  const flattenedSettings = {
-    isExtensionEnabled,
-    ...settings[hostStorageKey],
-  };
-  sendResponse(flattenedSettings);
+  try {
+    const settings = (await getSettings()) || {};
+    const { isExtensionEnabled } = settings;
+    const [hostStorageKey] = getHostInfo();
+    // Flatten settings since extension cannot fetch the host name
+    const flattenedSettings = {
+      isExtensionEnabled,
+      ...settings[hostStorageKey],
+    };
+    sendResponse(flattenedSettings);
+  } catch (error) {
+    sendResponse({});
+    throw error;
+  }
 }
 
 function handleError(error) {
-  console.error('[Looker extension] Error: ', error.message);
+  console.error('[Looker extension] Error:', error.message);
 }
 
 function registerMessageListeners() {
@@ -162,7 +170,7 @@ function registerMessageListeners() {
         sendResponse();
         return;
       case 'REQUEST_SETTINGS':
-        handleRequestSettings(sendResponse);
+        handleRequestSettings(sendResponse).catch(handleError);
         return true;
       default:
         return;
